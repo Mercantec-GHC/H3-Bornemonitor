@@ -13,9 +13,9 @@
 
 ## Enhederne
 
-- **Børneenhed** – sender temperatur, fugt og lys hvert 10.–30. sekund. Ingen menu.
+- **Børneenhed** – sender temperatur, fugt og lys hvert 10.–30. sekund. Ingen menu, modtager intet (interval i koden).
 - **Forældreenhed** – viser måling og aktiv tilstand. Knapper: søvn, gåtur, aktivitet, madning, ble-skift → dagbog. Lydalarm ved advarsel og når børneenheden mister forbindelsen.
-- **Backend (C#, Docker)** – gemmer i Neon, tjekker grænser, sender advarsler og indstillinger, API + JWT.
+- **Backend (C#, Docker)** – gemmer i Neon, tjekker grænser, sender advarsler og indstillinger til forældreenheden, API + JWT.
 - **Hjemmeside** – målinger, grafer, dagbog, indstillinger.
 
 Tiden hentes via NTP med `WiFi.getTime()` *(skal afprøves)*.
@@ -33,7 +33,7 @@ Få beskeder, så mængden kræver ikke MQTT. Forskellen er advarsler til foræl
 
 Forslag: test om Oplà kan forbinde til brokeren fra skolen. Virker det – MQTT, ellers HTTP.
 
-MQTT-topics: `bornemonitor/{familieId}/barn/maaling`, `…/barn/status`, `…/foraelder/haendelse`, `…/alarm`, `…/indstillinger`.
+MQTT-topics: `bornemonitor/{familieId}/barn/maaling`, `…/barn/status`, `…/foraelder/haendelse`, `…/alarm`, `…/indstillinger` (backend → forældreenheden, retained).
 
 ## MVP (release 6, 4/12)
 
