@@ -31,9 +31,6 @@ Få beskeder, så mængden kræver ikke MQTT. Forskellen er advarsler til foræl
 | Advarsel | Polling hvert 3.–5. sek. | Med det samme |
 | "Børneenhed væk" | Backend tjekker | Indbygget (*last will*) |
 | Kompleksitet | Lavere | Højere (broker) |
-| Skolens netværk | Port 443, altid åben | Port 1883 – skal testes |
-
-Forslag: test om Oplà kan forbinde til brokeren fra skolen. Virker det – MQTT, ellers HTTP.
 
 ### Dataflow (hvis MQTT)
 
