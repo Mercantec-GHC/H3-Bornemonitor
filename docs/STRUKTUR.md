@@ -56,7 +56,7 @@ Hjemmeside ◄── API + JWT ──► Backend
 - Alarm sendes én gang, når grænsen overskrides, og "ok", når værdien er normal igen – ikke ved hver måling.
 - "Ingen forbindelse" sendes af brokeren (last will), så den virker, selv om backend er nede.
 
-## MVP (release 6, 4/12)
+## MVP – 4. december
 
 - Målinger → backend → database.
 - Advarsel ved høj temperatur/fugt.
