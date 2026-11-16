@@ -2,6 +2,8 @@
 
 *Forslag fra Andrii. [Projektbeskrivelsen](PROJEKTBESKRIVELSE.md) siger **hvad**, denne fil **hvordan**.*
 
+Navne i kode, topics, endpoints og databasen er på engelsk (`child`, `parent`, `measurement` …).
+
 ## Beslutninger
 
 | # | Spørgsmål | Status |
@@ -35,19 +37,19 @@ Forslag: test om Oplà kan forbinde til brokeren fra skolen. Virker det – MQTT
 
 ### Dataflow (hvis MQTT)
 
-Alle topics starter med `bornemonitor/{familieId}/`. Man abonnerer på et topic hos brokeren, ikke på en enhed.
+Alle topics starter med `babymonitor/{familyId}/`. Man abonnerer på et topic hos brokeren, ikke på en enhed.
 
 | Hvem | Publicerer | Abonnerer på |
 |---|---|---|
-| Børneenhed | `barn/maaling`, `barn/status` (last will) | – |
-| Forældreenhed | `foraelder/haendelse` | `barn/maaling`, `barn/status`, `alarm`, `indstillinger` |
-| Backend | `alarm`, `indstillinger` (retained) | `barn/maaling`, `barn/status`, `foraelder/haendelse` |
+| Børneenhed | `child/measurement`, `child/status` (last will) | – |
+| Forældreenhed | `parent/event` | `child/measurement`, `child/status`, `alarm`, `settings` |
+| Backend | `alarm`, `settings` (retained) | `child/measurement`, `child/status`, `parent/event` |
 | Hjemmeside | – | – (bruger backendens API) |
 
 ```
 Børneenhed ──måling──► broker ──► Backend: gem alt, tjek grænser
                               └──► Forældreenhed: vis tallet
-Backend ──alarm/indstillinger──► broker ──► Forældreenhed: bip / opdater
+Backend ──alarm/settings──► broker ──► Forældreenhed: bip / opdater
 Forældreenhed ──søvn, gåtur…──► broker ──► Backend: gem i dagbog
 Hjemmeside ◄── API + JWT ──► Backend
 ```
