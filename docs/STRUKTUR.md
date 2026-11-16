@@ -8,7 +8,7 @@ Navne i kode, topics, endpoints og databasen er på engelsk (`child`, `parent`, 
 
 | # | Spørgsmål | Status |
 |---|---|---|
-| 1 | MQTT eller HTTP? | ❓ Åben |
+| 1 | MQTT eller HTTP? | ✅ MQTT (EMQX Cloud) |
 | 2 | Hvem tjekker grænseværdierne? | ✅ Backend (sættes på hjemmesiden) |
 | 3 | Menu / forældrekode på børneenheden? | ✅ Nej, den sender kun data |
 | 4 | MVP og nice to have? | ❓ Åben – forslag nedenfor |
@@ -22,7 +22,11 @@ Navne i kode, topics, endpoints og databasen er på engelsk (`child`, `parent`, 
 
 Tiden hentes via NTP med `WiFi.getTime()` *(skal afprøves)*.
 
-## MQTT eller HTTP?
+## Kommunikation: MQTT
+
+**Valgt: MQTT** via EMQX Cloud (Serverless, gratis): `f2ba9612.ala.eu-central-1.emqxsl.com`, port `8883` (TLS). Login deles ikke i Git.
+
+### Hvorfor MQTT og ikke HTTP
 
 Få beskeder, så mængden kræver ikke MQTT. Forskellen er advarsler til forældreenheden:
 
@@ -32,7 +36,7 @@ Få beskeder, så mængden kræver ikke MQTT. Forskellen er advarsler til foræl
 | "Børneenhed væk" | Backend tjekker | Indbygget (*last will*) |
 | Kompleksitet | Lavere | Højere (broker) |
 
-### Dataflow (hvis MQTT)
+### Dataflow
 
 Alle topics starter med `babymonitor/{familyId}/`. Man abonnerer på et topic hos brokeren, ikke på en enhed.
 
