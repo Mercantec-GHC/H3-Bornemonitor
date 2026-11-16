@@ -33,7 +33,28 @@ Få beskeder, så mængden kræver ikke MQTT. Forskellen er advarsler til foræl
 
 Forslag: test om Oplà kan forbinde til brokeren fra skolen. Virker det – MQTT, ellers HTTP.
 
-MQTT-topics: `bornemonitor/{familieId}/barn/maaling`, `…/barn/status`, `…/foraelder/haendelse`, `…/alarm`, `…/indstillinger` (backend → forældreenheden, retained).
+### Dataflow (hvis MQTT)
+
+Alle topics starter med `bornemonitor/{familieId}/`. Man abonnerer på et topic hos brokeren, ikke på en enhed.
+
+| Hvem | Publicerer | Abonnerer på |
+|---|---|---|
+| Børneenhed | `barn/maaling`, `barn/status` (last will) | – |
+| Forældreenhed | `foraelder/haendelse` | `barn/maaling`, `barn/status`, `alarm`, `indstillinger` |
+| Backend | `alarm`, `indstillinger` (retained) | `barn/maaling`, `barn/status`, `foraelder/haendelse` |
+| Hjemmeside | – | – (bruger backendens API) |
+
+```
+Børneenhed ──måling──► broker ──► Backend: gem alt, tjek grænser
+                              └──► Forældreenhed: vis tallet
+Backend ──alarm/indstillinger──► broker ──► Forældreenhed: bip / opdater
+Forældreenhed ──søvn, gåtur…──► broker ──► Backend: gem i dagbog
+Hjemmeside ◄── API + JWT ──► Backend
+```
+
+- Backend gemmer **alle** målinger (til grafer). Grænsen afgør kun, om der også sendes alarm.
+- Alarm sendes én gang, når grænsen overskrides, og "ok", når værdien er normal igen – ikke ved hver måling.
+- "Ingen forbindelse" sendes af brokeren (last will), så den virker, selv om backend er nede.
 
 ## MVP (release 6, 4/12)
 
