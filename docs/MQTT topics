@@ -1,0 +1,21 @@
+Topics and json format for childs´ Arduino:
+
+child/telemetry:
+{
+"temperature_c": 00.0,
+"humidity_pct": 00,0,
+"light_level": "very_low"/"low"/"medium"/ "high"/"very_high"
+}
+
+child/event:
+{
+"event_id": ...,
+"type": "sleep"/"walk"/"eat"/"diaper",
+"action": "start"/"stop"
+}
+
+child/alarm
+{
+"alarm_id": ,
+"state": "ofline"
+}
