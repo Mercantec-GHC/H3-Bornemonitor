@@ -47,17 +47,27 @@ Alle topics starter med `babymonitor/{familyId}/`. Man abonnerer på et topic ho
 | Backend | `alarm`, `settings` (retained) | `child/measurement`, `child/status`, `parent/event` |
 | Hjemmeside | – | – (bruger backendens API) |
 
-```
-Børneenhed ──måling──► broker ──► Backend: gem alt, tjek grænser
-                              └──► Forældreenhed: vis tallet
-Backend ──alarm/settings──► broker ──► Forældreenhed: bip / opdater
-Forældreenhed ──søvn, gåtur…──► broker ──► Backend: gem i dagbog
-Hjemmeside ◄── API + JWT ──► Backend
-```
+![MQTT publish / subscribe](mqtt-flow.svg)
 
 - Backend gemmer **alle** målinger (til grafer). Grænsen afgør kun, om der også sendes alarm.
 - Alarm sendes én gang, når grænsen overskrides, og "ok", når værdien er normal igen – ikke ved hver måling.
 - "Ingen forbindelse" sendes af brokeren (last will), så den virker, selv om backend er nede.
+
+### Beskedformat (JSON) – forslag
+
+Aftales, før vi koder, så Arduino og backend kan laves hver for sig (backend testes med MQTTX). `familyId` = `family1` i MVP.
+
+| Topic | Eksempel |
+|---|---|
+| `child/measurement` | `{"temp": 22.5, "humidity": 48, "light": 12}` |
+| `child/status` | `"online"` ved forbindelse, `"offline"` som last will (retained) |
+| `parent/event` | `{"type": "sleep", "action": "start"}` – `type`: `sleep`, `walk`, `activity`, `feeding`; `action`: `start`/`stop` |
+| `parent/event` (ble-skift) | `{"type": "diaper"}` – kun én hændelse, ingen `action` |
+| `alarm` | `{"type": "temp", "state": "high"}` / `{"type": "temp", "state": "ok"}` – `type`: `temp`, `humidity` |
+| `settings` (retained) | `{"tempMax": 24, "humidityMax": 60, "walkMinutes": 30}` |
+
+- Tid sætter backend, når beskeden modtages – Arduino sender ikke tid i MVP.
+- Temperatur i °C, fugt i %, lys som rå værdi fra sensoren.
 
 ## MVP – 4. december
 
