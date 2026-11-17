@@ -10,17 +10,18 @@ Navne i kode, topics, endpoints og databasen er på engelsk (`child`, `parent`, 
 |---|---|---|
 | 1 | MQTT eller HTTP? | ✅ MQTT (EMQX Cloud) |
 | 2 | Hvem tjekker grænseværdierne? | ✅ Backend (sættes på hjemmesiden) |
-| 3 | Menu / forældrekode på børneenheden? | ✅ Nej, den sender kun data |
-| 4 | MVP og nice to have? | ❓ Åben – forslag nedenfor |
+| 3 | Hvor trykker man på hændelser (søvn, gåtur …)? | ✅ På børneenheden, med TOUCH0 holdt nede ([Tetiana](Funktioner%20i%20barnets%20Arduino)) |
+| 4 | Hvad gør forældreenheden? | ❓ Åben |
+| 5 | MVP og nice to have? | ❓ Åben – forslag nedenfor |
 
 ## Enhederne
 
-- **Børneenhed** – sender temperatur, fugt og lys hvert 10.–30. sekund. Ingen menu, modtager intet (interval i koden).
-- **Forældreenhed** – viser måling og aktiv tilstand. Knapper: søvn, gåtur, aktivitet, madning, ble-skift → dagbog. Lydalarm ved advarsel og når børneenheden mister forbindelsen.
-- **Backend (C#, Docker)** – gemmer i Neon, tjekker grænser, sender advarsler og indstillinger til forældreenheden, API + JWT.
+- **Børneenhed** – sender temperatur, fugt og lys hvert 20. sekund og hændelser (søvn, gåtur, madning, ble-skift) fra knapperne. Detaljer: [Funktioner i barnets Arduino](Funktioner%20i%20barnets%20Arduino) (Tetiana).
+- **Forældreenhed** – *ikke afklaret.* Forslag: viser måling og alarm, lydalarm ved advarsel og når børneenheden er offline.
+- **Backend (C#, Docker)** – gemmer i Neon, tjekker grænser og online/offline, sender advarsler og indstillinger, API + JWT.
 - **Hjemmeside** – målinger, grafer, dagbog, indstillinger.
 
-Tiden hentes via NTP med `WiFi.getTime()` *(skal afprøves)*.
+Tiden sættes af Arduinoen (RTC, synkroniseret via NTP) og sendes som `timestamp` i UTC.
 
 ## Kommunikation: MQTT
 
@@ -33,41 +34,44 @@ Få beskeder, så mængden kræver ikke MQTT. Forskellen er advarsler til foræl
 | | HTTP | MQTT |
 |---|---|---|
 | Advarsel | Polling hvert 3.–5. sek. | Med det samme |
-| "Børneenhed væk" | Backend tjekker | Indbygget (*last will*) |
 | Kompleksitet | Lavere | Højere (broker) |
 
 ### Dataflow
 
-Alle topics starter med `babymonitor/{familyId}/`. Man abonnerer på et topic hos brokeren, ikke på en enhed.
+Man abonnerer på et topic hos brokeren, ikke på en enhed.
 
 | Hvem | Publicerer | Abonnerer på |
 |---|---|---|
-| Børneenhed | `child/measurement`, `child/status` (last will) | – |
-| Forældreenhed | `parent/event` | `child/measurement`, `child/status`, `alarm`, `settings` |
-| Backend | `alarm`, `settings` (retained) | `child/measurement`, `child/status`, `parent/event` |
+| Børneenhed | `child/telemetry`, `child/event/duration`, `child/event/instant` | – |
+| Forældreenhed | *ikke afklaret* | forslag: `child/telemetry`, `alarm`, `settings` |
+| Backend | `alarm`, `settings` (retained) | `child/#` |
 | Hjemmeside | – | – (bruger backendens API) |
 
 ![MQTT publish / subscribe](mqtt-flow.svg)
 
 - Backend gemmer **alle** målinger (til grafer). Grænsen afgør kun, om der også sendes alarm.
 - Alarm sendes én gang, når grænsen overskrides, og "ok", når værdien er normal igen – ikke ved hver måling.
-- "Ingen forbindelse" sendes af brokeren (last will), så den virker, selv om backend er nede.
+- **Offline:** børneenheden sender ingen status og ingen *last will*. Backend markerer den som offline, når der ikke er kommet telemetri i 60 sek. (3 × 20 sek.).
 
-### Beskedformat (JSON) – forslag
+### Beskedformat (JSON)
 
-Aftales, før vi koder, så Arduino og backend kan laves hver for sig (backend testes med MQTTX). `familyId` = `family1` i MVP.
+Fra børneenheden: se [MQTT topics](MQTT%20topics) (Tetiana). Vigtigt for backend:
+
+- `timestamp` kommer fra Arduinoen (UTC) – backend gemmer den, ikke modtagelsestidspunktet.
+- Ved mistet forbindelse gemmer Arduinoen hændelser i en kø og sender dem senere med det oprindelige `timestamp` → gamle beskeder er normale.
+- `event_id` er det samme ved `start` og `stop` for `sleep`/`walk` → dubletter (QoS 1, kø) genkendes på `event_id`.
+
+Fra backend (forslag):
 
 | Topic | Eksempel |
 |---|---|
-| `child/measurement` | `{"temp": 22.5, "humidity": 48, "light": 12}` |
-| `child/status` | `"online"` ved forbindelse, `"offline"` som last will (retained) |
-| `parent/event` | `{"type": "sleep", "action": "start"}` – `type`: `sleep`, `walk`, `activity`, `feeding`; `action`: `start`/`stop` |
-| `parent/event` (ble-skift) | `{"type": "diaper"}` – kun én hændelse, ingen `action` |
-| `alarm` | `{"type": "temp", "state": "high"}` / `{"type": "temp", "state": "ok"}` – `type`: `temp`, `humidity` |
+| `alarm` | `{"type": "temp", "state": "high"}` / `{"type": "offline", "state": "high"}` / `… "state": "ok"` – `type`: `temp`, `humidity`, `offline` |
 | `settings` (retained) | `{"tempMax": 24, "humidityMax": 60, "walkMinutes": 30}` |
 
-- Tid sætter backend, når beskeden modtages – Arduino sender ikke tid i MVP.
-- Temperatur i °C, fugt i %, lys som rå værdi fra sensoren.
+**Skal afklares med Tetiana:**
+
+- Prefix: `child/telemetry` eller `babymonitor/family1/child/telemetry`?
+- Type af `event_id`: tal eller tekst?
 
 ## MVP – 4. december
 

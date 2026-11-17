@@ -7,49 +7,46 @@
 .topic{fill:#ffffff;stroke:#888780;stroke-width:.5}
 </style>
 <rect width="680" height="410" fill="#ffffff"/>
-<rect x="255" y="45" width="170" height="320" rx="16" fill="#F1EFE8" stroke="#5F5E5A" stroke-width=".5"/>
-<text class="t" x="340" y="70" text-anchor="middle" fill="#444441">EMQX broker</text>
-<text class="s" x="340" y="90" text-anchor="middle" fill="#5F5E5A">babymonitor/family1/…</text>
+<rect x="245" y="45" width="190" height="320" rx="16" fill="#F1EFE8" stroke="#5F5E5A" stroke-width=".5"/>
+<text class="t" x="340" y="75" text-anchor="middle" fill="#444441">EMQX broker</text>
 <g fill="#2C2C2A" text-anchor="middle" class="s">
-<rect class="topic" x="270" y="115" width="140" height="30" rx="4"/><text x="340" y="134">child/measurement</text>
-<rect class="topic" x="270" y="165" width="140" height="30" rx="4"/><text x="340" y="184">child/status</text>
-<rect class="topic" x="270" y="215" width="140" height="30" rx="4"/><text x="340" y="234">alarm</text>
-<rect class="topic" x="270" y="265" width="140" height="30" rx="4"/><text x="340" y="284">settings (retained)</text>
-<rect class="topic" x="270" y="315" width="140" height="30" rx="4"/><text x="340" y="334">parent/event</text>
+<rect class="topic" x="260" y="115" width="160" height="30" rx="4"/><text x="340" y="134">child/telemetry</text>
+<rect class="topic" x="260" y="165" width="160" height="30" rx="4"/><text x="340" y="184">child/event/duration</text>
+<rect class="topic" x="260" y="215" width="160" height="30" rx="4"/><text x="340" y="234">child/event/instant</text>
+<rect class="topic" x="260" y="265" width="160" height="30" rx="4"/><text x="340" y="284">alarm</text>
+<rect class="topic" x="260" y="315" width="160" height="30" rx="4"/><text x="340" y="334">settings (retained)</text>
 </g>
-<rect x="30" y="100" width="130" height="56" rx="8" fill="#FBEAF0" stroke="#993556" stroke-width=".5"/>
-<text class="t" x="95" y="123" text-anchor="middle" fill="#72243E">Child unit</text>
-<text class="s" x="95" y="142" text-anchor="middle" fill="#993556">Arduino</text>
-<rect x="30" y="300" width="130" height="56" rx="8" fill="#FBEAF0" stroke="#993556" stroke-width=".5"/>
-<text class="t" x="95" y="323" text-anchor="middle" fill="#72243E">Parent unit</text>
-<text class="s" x="95" y="342" text-anchor="middle" fill="#993556">Arduino</text>
-<rect x="520" y="227" width="130" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width=".5"/>
-<text class="t" x="585" y="250" text-anchor="middle" fill="#3C3489">Backend C#</text>
-<text class="s" x="585" y="269" text-anchor="middle" fill="#534AB7">MQTTnet, Neon</text>
-<rect x="520" y="330" width="130" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width=".5"/>
-<text class="t" x="585" y="353" text-anchor="middle" fill="#3C3489">Website</text>
-<text class="s" x="585" y="372" text-anchor="middle" fill="#534AB7">API + JWT</text>
-<line class="pub" x1="160" y1="125" x2="266" y2="130" marker-end="url(#ap)"/>
-<line class="pub" x1="160" y1="142" x2="266" y2="178" marker-end="url(#ap)"/>
-<text class="s" x="213" y="114" text-anchor="middle" fill="#D85A30">publish</text>
-<text class="s" x="30" y="176" fill="#5F5E5A">Connection lost →</text>
-<text class="s" x="30" y="191" fill="#5F5E5A">broker publishes</text>
-<text class="s" x="30" y="206" fill="#5F5E5A">"offline" (last will)</text>
-<line x1="150" y1="200" x2="266" y2="186" stroke="#5F5E5A" stroke-width="1.2" stroke-dasharray="2 3" marker-end="url(#ag)"/>
-<line class="sub" x1="270" y1="134" x2="112" y2="296" marker-end="url(#as)"/>
-<line class="sub" x1="270" y1="184" x2="126" y2="296" marker-end="url(#as)"/>
-<line class="sub" x1="270" y1="234" x2="140" y2="296" marker-end="url(#as)"/>
-<line class="sub" x1="270" y1="283" x2="154" y2="298" marker-end="url(#as)"/>
-<text class="s" x="90" y="252" text-anchor="middle" fill="#1D9E75">subscribe / read</text>
-<line class="pub" x1="160" y1="340" x2="266" y2="332" marker-end="url(#ap)"/>
-<text class="s" x="213" y="359" text-anchor="middle" fill="#D85A30">publish</text>
-<line class="sub" x1="410" y1="130" x2="517" y2="232" marker-end="url(#as)"/>
-<line class="sub" x1="410" y1="180" x2="517" y2="240" marker-end="url(#as)"/>
-<line class="sub" x1="410" y1="330" x2="517" y2="278" marker-end="url(#as)"/>
-<text class="s" x="480" y="132" text-anchor="middle" fill="#1D9E75">subscribe / read</text>
-<line class="pub" x1="520" y1="252" x2="414" y2="232" marker-end="url(#ap)"/>
-<line class="pub" x1="520" y1="265" x2="414" y2="280" marker-end="url(#ap)"/>
-<text class="s" x="465" y="294" text-anchor="middle" fill="#D85A30">publish</text>
-<line x1="585" y1="286" x2="585" y2="327" stroke="#5F5E5A" stroke-width="1.5" marker-start="url(#ag)" marker-end="url(#ag)"/>
-<text class="s" x="575" y="311" text-anchor="end" fill="#5F5E5A">HTTP API</text>
+<rect x="20" y="100" width="130" height="56" rx="8" fill="#FBEAF0" stroke="#993556" stroke-width=".5"/>
+<text class="t" x="85" y="123" text-anchor="middle" fill="#72243E">Child unit</text>
+<text class="s" x="85" y="142" text-anchor="middle" fill="#993556">Arduino</text>
+<text class="s" x="20" y="176" fill="#5F5E5A">Buttons: sleep, walk,</text>
+<text class="s" x="20" y="191" fill="#5F5E5A">eat, diaper</text>
+<rect x="20" y="300" width="130" height="56" rx="8" fill="#FBEAF0" stroke="#993556" stroke-width=".5" stroke-dasharray="4 3"/>
+<text class="t" x="85" y="323" text-anchor="middle" fill="#72243E">Parent unit</text>
+<text class="s" x="85" y="342" text-anchor="middle" fill="#993556">Arduino – not decided</text>
+<line class="pub" x1="150" y1="118" x2="256" y2="129" marker-end="url(#ap)"/>
+<line class="pub" x1="150" y1="130" x2="256" y2="178" marker-end="url(#ap)"/>
+<line class="pub" x1="150" y1="142" x2="256" y2="226" marker-end="url(#ap)"/>
+<text class="s" x="203" y="112" text-anchor="middle" fill="#D85A30">publish</text>
+<line class="sub" x1="260" y1="140" x2="110" y2="296" marker-end="url(#as)"/>
+<line class="sub" x1="260" y1="285" x2="140" y2="298" marker-end="url(#as)"/>
+<line class="sub" x1="260" y1="330" x2="154" y2="328" marker-end="url(#as)"/>
+<text class="s" x="60" y="262" text-anchor="middle" fill="#1D9E75">subscribe / read</text>
+<line class="sub" x1="420" y1="130" x2="517" y2="232" marker-end="url(#as)"/>
+<line class="sub" x1="420" y1="180" x2="517" y2="242" marker-end="url(#as)"/>
+<line class="sub" x1="420" y1="230" x2="517" y2="252" marker-end="url(#as)"/>
+<text class="s" x="490" y="140" text-anchor="middle" fill="#1D9E75">subscribe child/#</text>
+<line class="pub" x1="520" y1="262" x2="424" y2="280" marker-end="url(#ap)"/>
+<line class="pub" x1="520" y1="275" x2="424" y2="328" marker-end="url(#ap)"/>
+<text class="s" x="485" y="328" text-anchor="middle" fill="#D85A30">publish</text>
+<rect x="520" y="227" width="140" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width=".5"/>
+<text class="t" x="590" y="250" text-anchor="middle" fill="#3C3489">Backend C#</text>
+<text class="s" x="590" y="269" text-anchor="middle" fill="#534AB7">MQTTnet, Neon</text>
+<text class="s" x="660" y="185" text-anchor="end" fill="#5F5E5A">No telemetry 60 s</text>
+<text class="s" x="660" y="200" text-anchor="end" fill="#5F5E5A">→ offline alarm</text>
+<rect x="520" y="340" width="140" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width=".5"/>
+<text class="t" x="590" y="363" text-anchor="middle" fill="#3C3489">Website</text>
+<text class="s" x="590" y="382" text-anchor="middle" fill="#534AB7">API + JWT</text>
+<line x1="590" y1="286" x2="590" y2="337" stroke="#5F5E5A" stroke-width="1.5" marker-start="url(#ag)" marker-end="url(#ag)"/>
+<text class="s" x="580" y="316" text-anchor="end" fill="#5F5E5A">HTTP API</text>
 </svg>
