@@ -3,19 +3,23 @@ Topics and json format for childs´ Arduino:
 child/telemetry:
 {
 "temperature_c": 00.0,
-"humidity_pct": 00,0,
+"humidity_pct": 00.0,
 "light_level": "very_low"/"low"/"medium"/ "high"/"very_high"
+ "timestamp": "2026-11-17T11:20:00Z"
 }
 
-child/event:
+child/event/duration:
 {
 "event_id": ...,
-"type": "sleep"/"walk"/"eat"/"diaper",
-"action": "start"/"stop"
+"type": "sleep"/"walk",
+"action": "start"/"stop",
+ "timestamp": "2026-11-17T11:20:00Z"
 }
 
-child/alarm
+child/event/instant:
 {
-"alarm_id": ,
-"state": "ofline"
+"event_id": ...,
+"type": "eat"/"diaper",
+"timestamp": "2026-11-17T11:20:00Z"
 }
+
