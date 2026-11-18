@@ -1,4 +1,4 @@
-Topics and json format for childs´ Arduino:
+Topics and json format for childs´ Arduino - publisher (both backend and parent Arduino are subsribers):
 
 child/telemetry:
 {
@@ -23,3 +23,12 @@ child/event/instant:
 "timestamp": "2026-11-17T11:20:00Z"
 }
 
+Backend sands to parents´ Arduino, if connection was lost:
+
+child/status
+{
+  "state": "offline",
+  "last_seen": "2026-11-17T14:40:00Z"
+}
+
+Parent Arduino subscriber to all 4 topics
