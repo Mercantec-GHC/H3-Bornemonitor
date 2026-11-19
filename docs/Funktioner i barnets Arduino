@@ -45,12 +45,12 @@
      ```
 
    - `eat` (feeding) og `diaper` er enkeltstående hændelser. Beskeden sendes én gang til topic `child/event/instant`. JSON indeholder:
-     - `event_id` – et unikt ID for hændelsen;
+     - `event_id` – et unikt ID for hændelsen: Unix-tid i sekunder for tryk på knappen (heltal, `WiFi.getTime()`);
      - `type` – `eat` eller `diaper`;
      - `timestamp` – tidspunktet for hændelsen.
 
    - `sleep` og `walk` er længerevarende hændelser. Beskederne sendes til topic `child/event/duration`. JSON indeholder:
-     - `event_id` – et unikt ID for hændelsen, som er det samme ved start og afslutning;
+     - `event_id` – Unix-tid i sekunder for tryk på start-knappen (heltal), som er det samme ved start og afslutning;
      - `type` – `sleep` eller `walk`;
      - `action` – `start` eller `stop`;
      - `timestamp` – tidspunktet for hændelsens start eller afslutning.

@@ -1,6 +1,6 @@
 # Forældre-Arduino – funktionel specifikation
 
-> **Formål:** Forældre-Arduinoen viser målinger og hændelser fra barnets Arduino og advarer, når forbindelsen til barnets enhed er afbrudt. Kommunikationen foregår via en MQTT-broker.
+> **Formål:** Forældre-Arduinoen viser målinger og hændelser fra barnets Arduino og advarer ved høj temperatur eller luftfugtighed, og når forbindelsen til barnets enhed er afbrudt. Kommunikationen foregår via en MQTT-broker.
 
 ## 1. MQTT-kommunikation
 
@@ -11,7 +11,7 @@ Forældre-Arduinoen er **subscriber** og publicerer ikke selv applikationsdata i
 | `child/telemetry` | Barnets Arduino | Temperatur, luftfugtighed og lysniveau (hvert 20. sekund) |
 | `child/event/instant` | Barnets Arduino | Enkeltstående hændelser: `eat`, `diaper` |
 | `child/event/duration` | Barnets Arduino | Start og stop af længerevarende hændelser: `sleep`, `walk` |
-| `child/status` | Backend | Forbindelsesstatus for barnets Arduino: `online` / `offline` |
+| `child/status` | Backend | Forbindelsesstatus for barnets Arduino: `online` / `offline` (retained) |
 
 ## 2. Normal visning og aktive hændelser
 
@@ -47,6 +47,14 @@ Når **TOUCH0 holdes nede**, viser displayet de senest modtagne værdier:
 
 Når TOUCH0 slippes, vender displayet tilbage til den aktuelle hovedvisning. Telemetrien opdateres, hver gang der modtages en ny besked fra `child/telemetry` (normalt hvert 20. sekund).
 
+### Advarsel ved høj temperatur eller luftfugtighed
+
+Forældre-Arduinoen sammenligner selv `temperature_c` og `humidity_pct` fra hver `child/telemetry`-besked med grænseværdier i koden. Der er intet ekstra topic, og backend sender ingen advarsel.
+
+- Ved overskridelse vises en advarsel (`TEMP HIGH` / `HUMIDITY HIGH` med værdien) og der gives et kort lydsignal – kun én gang, når grænsen overskrides, ikke ved hver måling.
+- Når værdien er normal igen, forsvinder advarslen.
+- Grænseværdierne (fx 24 °C og 60 %) fastlægges i koden. At sætte dem fra hjemmesiden er *nice to have* (se `STRUKTUR.md`).
+
 ## 4. Enkeltstående hændelser
 
 Når der modtages `eat` eller `diaper` via `child/event/instant`:
@@ -69,7 +77,7 @@ Notifikationen lukkes enten ved at dække sensoren med hånden i ca. 1 sekund el
 
 ## 5. Alarm: Barnets Arduino er offline
 
-Backend overvåger den indgående telemetri og publicerer status på `child/status`.
+Backend overvåger den indgående telemetri og publicerer status på `child/status` – kun ved skift. Beskeden er *retained*: når forældre-Arduinoen genstarter eller genforbinder, modtager den straks den seneste status.
 
 Eksempel på en offline-besked:
 
@@ -115,9 +123,10 @@ Meddelelser med højere prioritet vises frem for meddelelser med lavere priorite
 | :---: | :--- | :--- |
 | **1** | `CONNECTION LOST` | Lokal forbindelsesfejl; forsøg på genoprettelse |
 | **2** | `CHILD OFFLINE` | Kort lydsignal og røde LED'er |
-| **3** | `FEEDING` / `DIAPER` | Grønne LED'er; visning i højst 60 sekunder |
-| **4** | `SLEEP` / `WALK` | Løbende visning af den aktive hændelse og dens varighed |
-| **5** | `ACTIVE` | Standardvisning |
+| **3** | `TEMP HIGH` / `HUMIDITY HIGH` | Kort lydsignal; vises, så længe værdien er for høj |
+| **4** | `FEEDING` / `DIAPER` | Grønne LED'er; visning i højst 60 sekunder |
+| **5** | `SLEEP` / `WALK` | Løbende visning af den aktive hændelse og dens varighed |
+| **6** | `ACTIVE` | Standardvisning |
 
 Når en midlertidig notifikation lukkes, gendannes den højest prioriterede aktuelle visning. Hvis flere enkeltstående hændelser modtages tæt på hinanden, bør de behandles i rækkefølge, så en besked ikke uden videre overskriver en anden.
 

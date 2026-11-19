@@ -10,7 +10,7 @@ child/telemetry:
 
 child/event/duration:
 {
-"event_id": ...,
+"event_id": 1795074236,
 "type": "sleep"/"walk",
 "action": "start"/"stop",
  "timestamp": "2026-11-17T11:20:00Z"
@@ -18,12 +18,14 @@ child/event/duration:
 
 child/event/instant:
 {
-"event_id": ...,
+"event_id": 1795074240,
 "type": "eat"/"diaper",
 "timestamp": "2026-11-17T11:20:00Z"
 }
 
-Backend sands to parents´ Arduino, if connection was lost:
+event_id = Unix time in seconds when the button is pressed (integer, WiFi.getTime()). The same event_id for start and stop.
+
+Backend sands to parents´ Arduino, if connection was lost (retained, only on change):
 
 child/status
 {
@@ -31,4 +33,8 @@ child/status
   "last_seen": "2026-11-17T14:40:00Z"
 }
 
-Parent Arduino subscriber to all 4 topics
+{
+  "state": "online"
+}
+
+Parent Arduino subscriber to all 4 topics. It checks temperature_c / humidity_pct from child/telemetry against limits in its own code (no extra topic).
