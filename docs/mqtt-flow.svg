@@ -13,7 +13,7 @@
 <rect class="topic" x="260" y="120" width="160" height="30" rx="4"/><text x="340" y="139">child/telemetry</text>
 <rect class="topic" x="260" y="175" width="160" height="30" rx="4"/><text x="340" y="194">child/event/duration</text>
 <rect class="topic" x="260" y="230" width="160" height="30" rx="4"/><text x="340" y="249">child/event/instant</text>
-<rect class="topic" x="260" y="285" width="160" height="30" rx="4"/><text x="340" y="304">child/status</text>
+<rect class="topic" x="260" y="285" width="160" height="30" rx="4"/><text x="340" y="304">child/status (retained)</text>
 </g>
 <rect x="20" y="100" width="130" height="56" rx="8" fill="#FBEAF0" stroke="#993556" stroke-width=".5"/>
 <text class="t" x="85" y="123" text-anchor="middle" fill="#72243E">Child unit</text>
