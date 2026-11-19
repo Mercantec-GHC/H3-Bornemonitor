@@ -4,7 +4,7 @@ namespace Bornemonitor.Api.Mqtt;
 
 public class MqttService(IConfiguration config, ILogger<MqttService> logger) : BackgroundService
 {
-    private const string TopicFilter = "babymonitor/family1/#";
+    private const string TopicFilter = "child/#";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
