@@ -10,14 +10,14 @@ Navne i kode, topics, endpoints og databasen er på engelsk (`child`, `parent`, 
 |---|---|---|
 | 1 | MQTT eller HTTP? | ✅ MQTT (EMQX Cloud) |
 | 2 | Hvem tjekker grænseværdierne? | ✅ Forældreenheden selv, grænser i koden (se 5) |
-| 3 | Hvor trykker man på hændelser (søvn, gåtur …)? | ✅ På børneenheden ([Tetiana](Funktioner%20i%20barnets%20Arduino)) |
+| 3 | Hvor trykker man på hændelser (søvn, gåtur …)? | ✅ På børneenheden ([Tetiana](child-arduino.md)) |
 | 4 | Hvad gør forældreenheden? | ✅ Kun subscriber: viser målinger, hændelser og offline-alarm ([Tetiana](parent-arduino.md)) |
 | 5 | Hvem viser advarsel ved høj temperatur/fugt? | ✅ Forældreenheden: sammenligner `child/telemetry` med grænser i koden. Intet ekstra topic |
 | 6 | MVP og nice to have? | ❓ Åben – forslag nedenfor |
 
 ## Enhederne
 
-- **Børneenhed** – kun publisher. Sender temperatur, fugt og lys hvert 20. sekund og hændelser (søvn, gåtur, madning, ble-skift) fra knapperne. Detaljer: [Funktioner i barnets Arduino](Funktioner%20i%20barnets%20Arduino).
+- **Børneenhed** – kun publisher. Sender temperatur, fugt og lys hvert 20. sekund og hændelser (søvn, gåtur, madning, ble-skift) fra knapperne. Detaljer: [Funktioner i barnets Arduino](child-arduino.md).
 - **Forældreenhed** – kun subscriber. Viser målinger, den aktive hændelse med varighed, madning/ble-skift og `CHILD OFFLINE` med lyd og røde LED'er. Detaljer: [parent-arduino.md](parent-arduino.md).
 - **Backend (C#, Docker)** – gemmer i Neon, overvåger online/offline og publicerer `child/status`, API + JWT.
 - **Hjemmeside** – målinger, grafer, dagbog.

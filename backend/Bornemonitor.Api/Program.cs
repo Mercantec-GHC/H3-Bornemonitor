@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Neon")));
+builder.Services.AddDbContextFactory<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Neon")));
 builder.Services.AddHostedService<MqttService>();
 
 var app = builder.Build();
@@ -16,5 +16,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGet("/", () => "Bornemonitor API");
+
+app.MapGet("/api/measurements", async (AppDbContext db) =>
+    await db.Measurements
+        .OrderByDescending(m => m.Timestamp)
+        .Take(100)
+        .ToListAsync());
 
 app.Run();
