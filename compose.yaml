@@ -1,0 +1,11 @@
+services:
+  backend:
+    build: ./backend/Bornemonitor.Api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      Mqtt__Host: ${MQTT_HOST}
+      Mqtt__Username: ${MQTT_USERNAME}
+      Mqtt__Password: ${MQTT_PASSWORD}
+      ConnectionStrings__Neon: ${NEON_CONNECTION}
