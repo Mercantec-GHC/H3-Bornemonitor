@@ -34,6 +34,7 @@ Neon-strengen skal være i formatet `Host=...;` – Npgsql forstår ikke `postgr
 ## Deploy
 
 [deploy.mags.dk](https://deploy.mags.dk) (Dokploy, fælles bruger fra Notion, dag 16) → projekt **Bornemonitor** → service **backend** (Compose).
+Direkte link (kræver login): [backend i Dokploy](https://deploy.mags.dk/dashboard/project/CLiaE6P1JNfa1rGIFAKO9/environment/H0Hz_VntjnQ520C4BkHq_/services/compose/6C54WEEf06svCZdPtPzc0). Fanen **Logs** viser, hvad backenden laver lige nu.
 
 - Kilde: dette repo, branch `dev`, fil [`compose.yaml`](../compose.yaml). Dokploy bygger image ud fra [`Dockerfile`](../backend/Bornemonitor.Api/Dockerfile).
 - Hemmeligheder i fanen *Environment*: `MQTT_HOST`, `MQTT_USERNAME`, `MQTT_PASSWORD`, `NEON_CONNECTION`.
