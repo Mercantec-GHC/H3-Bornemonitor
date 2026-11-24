@@ -5,6 +5,8 @@ services:
     expose:
       - "8080"
     environment:
+      # Do not watch appsettings.json for changes (the server has no free inotify slots)
+      DOTNET_hostBuilder__reloadConfigOnChange: "false"
       Mqtt__Host: ${MQTT_HOST}
       Mqtt__Username: ${MQTT_USERNAME}
       Mqtt__Password: ${MQTT_PASSWORD}
