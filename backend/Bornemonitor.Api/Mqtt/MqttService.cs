@@ -13,13 +13,13 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
     // Save to the database in batches, so Neon can sleep between saves (free plan: 100 compute hours per month)
     private static readonly TimeSpan SaveInterval = TimeSpan.FromMinutes(15);
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
     // Measurements waiting to be saved. Concurrent, because MQTT adds and the timer removes at the same time.
-    private readonly ConcurrentQueue<Measurement> buffer = new();
+    private readonly ConcurrentQueue<Measurement> buffer = new ConcurrentQueue<Measurement>();
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
