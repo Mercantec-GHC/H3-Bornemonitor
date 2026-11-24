@@ -86,7 +86,7 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
 
     private async Task SaveBufferAsync()
     {
-        List<Measurement> batch = [];
+        List<Measurement> batch = new List<Measurement>();
         while (buffer.TryDequeue(out Measurement? measurement))
             batch.Add(measurement);
 
