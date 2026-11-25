@@ -10,7 +10,7 @@
 | `child/telemetry` gemmes i Neon, tabel `Measurements` (#7) | ✅ |
 | `GET /api/measurements` – seneste 100 målinger, nyeste først (#8) | ✅ |
 | Docker + deploy på deploy.mags.dk (#9) | ✅ kører på https://bornemonitor.mercantec.tech – release [v0.1.0](https://github.com/Mercantec-GHC/H3-Bornemonitor/releases/tag/v0.1.0) |
-| `child/status` online/offline (#11) | ✅ i koden – ⏳ migration i Neon + deploy |
+| `child/status` online/offline (#11), tabel `ChildStatusChanges` | ✅ |
 | Dagbog, JWT (#12–#13) | ⬜ |
 
 Ugyldig JSON eller JSON uden et påkrævet felt bliver logget (`fail`) og ikke gemt.
