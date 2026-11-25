@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Bornemonitor.Api.Tests/Bornemonitor.Api.Tests.csproj" />
+  <Project Path="Bornemonitor.Api/Bornemonitor.Api.csproj" />
+</Solution>
