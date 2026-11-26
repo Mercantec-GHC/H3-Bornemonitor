@@ -20,6 +20,9 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
     private static readonly TimeSpan OfflineTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(5);
 
+    // Wait between reconnect attempts, so we do not hammer the broker
+    private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(5);
+
     private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
@@ -65,14 +68,21 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
         // If the child is silent right after a restart, last_seen comes from the newest saved measurement
         statusTracker.Restore(null, await GetLastMeasurementTimeAsync(stoppingToken));
 
-        await client.ConnectAsync(options, stoppingToken);
-        logger.LogInformation("Connected to MQTT broker {Host}", config["Mqtt:Host"]);
+        // MQTTnet does not reconnect by itself. Without this the backend silently stops getting messages.
+        client.DisconnectedAsync += async eventArgs =>
+        {
+            // Not after our own DisconnectAsync on stop, and not after a failed reconnect attempt (the loop below retries)
+            if (stoppingToken.IsCancellationRequested || !eventArgs.ClientWasConnected)
+                return;
+
+            logger.LogWarning("Lost connection to MQTT broker: {Reason}", eventArgs.Reason);
+            await ReconnectAsync(client, options, stoppingToken);
+        };
 
         // The broker sends the retained child/status right away, so the backend knows what it published before a restart
-        await client.SubscribeAsync(TopicFilter, cancellationToken: stoppingToken);
-        logger.LogInformation("Subscribed to {Topic}", TopicFilter);
+        await ConnectAndSubscribeAsync(client, options, stoppingToken);
 
-        using PeriodicTimer timer = new(CheckInterval);
+        using PeriodicTimer timer = new PeriodicTimer(CheckInterval);
         DateTime lastSave = DateTime.UtcNow;
         try
         {
@@ -92,8 +102,50 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
             // The app is stopping
         }
 
+        // Disconnect first, so no new measurements arrive while we save the last batch
+        try
+        {
+            await client.DisconnectAsync();
+        }
+        catch (Exception ex)
+        {
+            // The connection may already be lost. The last batch must still be saved.
+            logger.LogWarning(ex, "Failed to disconnect from MQTT broker");
+        }
+
         // Save what is left before the app stops
         await SaveBufferAsync();
+    }
+
+    private async Task ConnectAndSubscribeAsync(IMqttClient client, MqttClientOptions options, CancellationToken stoppingToken)
+    {
+        await client.ConnectAsync(options, stoppingToken);
+        logger.LogInformation("Connected to MQTT broker {Host} as {ClientId}", config["Mqtt:Host"], options.ClientId);
+
+        // A new connection has no subscriptions (clean start), so subscribe every time
+        await client.SubscribeAsync(TopicFilter, cancellationToken: stoppingToken);
+        logger.LogInformation("Subscribed to {Topic}", TopicFilter);
+    }
+
+    private async Task ReconnectAsync(IMqttClient client, MqttClientOptions options, CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(ReconnectDelay, stoppingToken);
+                await ConnectAndSubscribeAsync(client, options, stoppingToken);
+                return;
+            }
+            catch (OperationCanceledException)
+            {
+                return; // The app is stopping
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Reconnect to MQTT broker failed, trying again in {Delay}", ReconnectDelay);
+            }
+        }
     }
 
     private void HandleTelemetry(string? payload)
@@ -120,6 +172,10 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
 
     private async Task PublishStatusIfChangedAsync(IMqttClient client, CancellationToken stoppingToken)
     {
+        // While reconnecting we cannot publish. Check later, so the change is not lost.
+        if (!client.IsConnected)
+            return;
+
         StatusChange? change = statusTracker.Check(DateTime.UtcNow);
         if (change == null)
             return;
