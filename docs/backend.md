@@ -12,8 +12,8 @@
 | Docker + deploy på deploy.mags.dk (#9) | ✅ kører på https://bornemonitor.mercantec.tech – release [v0.1.0](https://github.com/Mercantec-GHC/H3-Bornemonitor/releases/tag/v0.1.0) |
 | `child/status` online/offline (#11), tabel `ChildStatusChanges` | ✅ |
 | Genforbindelse til brokeren efter tabt forbindelse | ✅ |
-| Dagbog (#12), tabel `DiaryEntries`, `GET /api/diary` | ✅ i koden – ⏳ migration i Neon + deploy |
-| Hjemmeside: status, målinger + graf, dagbog | ✅ i koden – ⏳ deploy |
+| Dagbog (#12), tabel `DiaryEntries`, `GET /api/diary` | ✅ |
+| Hjemmeside: status, målinger + graf, dagbog – https://bornemonitor.mercantec.tech | ✅ |
 | JWT (#13) | ⬜ |
 
 Ugyldig JSON eller JSON uden et påkrævet felt bliver logget (`fail`) og ikke gemt.
