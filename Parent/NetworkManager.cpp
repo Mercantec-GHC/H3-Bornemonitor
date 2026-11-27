@@ -5,9 +5,16 @@ namespace {
 const char MQTT_CLIENT_ID[] = "babymonitor-parent-01";
 }
 
+NetworkManager* NetworkManager::instance = nullptr;
+
 NetworkManager::NetworkManager() : mqtt(wifiClient) {}
 
-void NetworkManager::begin(void (*localTasksCallback)()) {
+void NetworkManager::begin(void (*localTasksCallback)(), MessageCallback incoming,
+                            ConnectionCallback connection) {
+  instance = this;
+  messageCallback = incoming;
+  connectionCallback = connection;
+  mqtt.onMessage(onMessage);
   WiFi.setTimeout(1000UL);
   WiFi.setFeedWatchdogFunc(localTasksCallback);
 
@@ -37,10 +44,14 @@ void NetworkManager::connectMqtt(unsigned long now) {
     return;
   }
   Serial.println("[MQTT] Broker connected");
+  mqttWasConnected = true;
+  if (connectionCallback) connectionCallback(true);
 
   if (!subscribeTopics()) {
     Serial.println("[MQTT] Reconnecting to retry subscriptions...");
     mqtt.stop();
+    mqttWasConnected = false;
+    if (connectionCallback) connectionCallback(false);
   }
 }
 
@@ -54,6 +65,10 @@ void NetworkManager::connectWiFi(unsigned long now) {
 }
 
 void NetworkManager::serviceNetwork() {
+  if (mqttWasConnected && (WiFi.status() != WL_CONNECTED || !mqtt.connected())) {
+    mqttWasConnected = false;
+    if (connectionCallback) connectionCallback(false);
+  }
   if (WiFi.status() != WL_CONNECTED) {
     if (wifiWasConnected) {
       Serial.println("Wi-Fi disconnected");
@@ -74,7 +89,7 @@ void NetworkManager::serviceNetwork() {
 
   connectMqtt(millis());
   if (mqtt.connected()) {
-    receiveMessages();
+    mqtt.poll();
   }
 }
 
@@ -122,27 +137,32 @@ bool NetworkManager::subscribeTopics() {
   return true;
 }
 
-void NetworkManager::receiveMessages() {
-  const int messageSize = mqtt.parseMessage();
-  if (messageSize <= 0) return;
+void NetworkManager::onMessage(int size) {
+  if (instance) instance->receiveMessage(size);
+}
 
-  Serial.print("[RX] Topic: ");
-  Serial.println(mqtt.messageTopic());
-  Serial.print("[RX] Size: ");
-  Serial.println(messageSize);
-  Serial.print("[RX] JSON: ");
-
-  while (mqtt.available()) {
+void NetworkManager::receiveMessage(int size) {
+  char payload[512];
+  if (size <= 0 || static_cast<size_t>(size) >= sizeof(payload)) {
+    Serial.println("[RX] Unsupported message size; reconnecting...");
+    mqtt.stop();
+    return;
+  }
+  const String topic = mqtt.messageTopic();
+  for (int i = 0; i < size; ++i) {
     const int value = mqtt.read();
     if (value < 0) {
-      Serial.println();
-      Serial.println("[RX] Read failed; reconnecting...");
+      Serial.println("[RX] Incomplete message; reconnecting...");
       mqtt.stop();
       return;
     }
-    Serial.write(static_cast<uint8_t>(value));
+    payload[i] = static_cast<char>(value);
   }
-
+  payload[size] = '\0';
+  Serial.print("[RX] Topic: ");
+  Serial.println(topic);
+  Serial.print("[RX] JSON: ");
+  Serial.write(reinterpret_cast<const uint8_t*>(payload), size);
   Serial.println();
-  Serial.println();
+  if (messageCallback) messageCallback(topic.c_str(), payload, size);
 }

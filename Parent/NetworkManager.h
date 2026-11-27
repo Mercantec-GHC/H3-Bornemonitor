@@ -8,7 +8,10 @@ class NetworkManager {
 public:
   NetworkManager();
 
-  void begin(void (*localTasksCallback)());
+  typedef void (*MessageCallback)(const char* topic, const char* payload, size_t size);
+  typedef void (*ConnectionCallback)(bool connected);
+  void begin(void (*localTasksCallback)(), MessageCallback messageCallback,
+             ConnectionCallback connectionCallback);
   void update();
   bool isConnected();
   unsigned long getNetworkTime();
@@ -19,7 +22,12 @@ private:
   void connectMqtt(unsigned long now);
   void serviceNetwork();
   void reportNetworkStatus();
-  void receiveMessages();
+  static NetworkManager* instance;
+  static void onMessage(int size);
+  void receiveMessage(int size);
+  MessageCallback messageCallback = nullptr;
+  ConnectionCallback connectionCallback = nullptr;
+  bool mqttWasConnected = false;
 
   WiFiSSLClient wifiClient;
   MqttClient mqtt;
