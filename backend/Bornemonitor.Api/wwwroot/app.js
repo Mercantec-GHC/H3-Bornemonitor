@@ -7,7 +7,8 @@ const TYPES = {
   eat: { icon: "🍼", name: "Mad" },
   diaper: { icon: "🧷", name: "Ble" },
 };
-const LIGHT = { low: "Lav", medium: "Middel", high: "Høj" };
+// Values from docs/MQTT topics
+const LIGHT = { very_low: "Meget lav", low: "Lav", medium: "Middel", high: "Høj", very_high: "Meget høj" };
 
 const timeFormat = new Intl.DateTimeFormat("da-DK", { hour: "2-digit", minute: "2-digit" });
 const dateTimeFormat = new Intl.DateTimeFormat("da-DK", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
