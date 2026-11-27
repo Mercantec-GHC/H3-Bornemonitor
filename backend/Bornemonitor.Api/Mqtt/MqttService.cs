@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Bornemonitor.Api.Data;
+using Bornemonitor.Api.Diary;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bornemonitor.Api.Mqtt;
@@ -32,6 +33,9 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
     // Measurements waiting to be saved. Concurrent, because MQTT adds and the timer removes at the same time.
     private readonly ConcurrentQueue<Measurement> buffer = new ConcurrentQueue<Measurement>();
 
+    // Diary events waiting to be saved (#12). Saved by the timer every 5 sec, not in the MQTT thread.
+    private readonly ConcurrentQueue<(DiaryEventMessage Message, bool IsDuration)> diaryQueue = new ConcurrentQueue<(DiaryEventMessage Message, bool IsDuration)>();
+
     private readonly ChildStatusTracker statusTracker = new ChildStatusTracker(OfflineTimeout, DateTime.UtcNow);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -47,6 +51,10 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
             {
                 if (topic == "child/telemetry")
                     HandleTelemetry(payload);
+                else if (topic == "child/event/duration")
+                    QueueDiaryEvent(payload, isDuration: true);
+                else if (topic == "child/event/instant")
+                    QueueDiaryEvent(payload, isDuration: false);
                 else if (topic == StatusTopic && eventArgs.ApplicationMessage.Retain)
                     RestoreStatus(payload);
             }
@@ -89,6 +97,7 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {
                 await PublishStatusIfChangedAsync(client, stoppingToken);
+                await SaveDiaryEventsAsync();
 
                 if (DateTime.UtcNow - lastSave >= SaveInterval)
                 {
@@ -114,6 +123,7 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
         }
 
         // Save what is left before the app stops
+        await SaveDiaryEventsAsync();
         await SaveBufferAsync();
     }
 
@@ -122,8 +132,9 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
         await client.ConnectAsync(options, stoppingToken);
         logger.LogInformation("Connected to MQTT broker {Host} as {ClientId}", config["Mqtt:Host"], options.ClientId);
 
-        // A new connection has no subscriptions (clean start), so subscribe every time
-        await client.SubscribeAsync(TopicFilter, cancellationToken: stoppingToken);
+        // A new connection has no subscriptions (clean start), so subscribe every time.
+        // QoS 1: diary events must not be lost between the broker and us (telemetry is sent with QoS 0 and stays QoS 0).
+        await client.SubscribeAsync(TopicFilter, MqttQualityOfServiceLevel.AtLeastOnce, stoppingToken);
         logger.LogInformation("Subscribed to {Topic}", TopicFilter);
     }
 
@@ -161,6 +172,52 @@ public class MqttService(IConfiguration config, ILogger<MqttService> logger, IDb
         });
 
         statusTracker.RecordTelemetry(msg.Timestamp, DateTime.UtcNow);
+    }
+
+    private void QueueDiaryEvent(string? payload, bool isDuration)
+    {
+        DiaryEventMessage msg = JsonSerializer.Deserialize<DiaryEventMessage>(payload ?? "", JsonOptions)!;
+        diaryQueue.Enqueue((msg, isDuration));
+    }
+
+    private async Task SaveDiaryEventsAsync()
+    {
+        if (diaryQueue.IsEmpty)
+            return;
+
+        using AppDbContext db = dbFactory.CreateDbContext();
+
+        while (diaryQueue.TryPeek(out (DiaryEventMessage Message, bool IsDuration) item))
+        {
+            DiaryEventMessage msg = item.Message;
+            try
+            {
+                DiaryEntry? existing = await db.DiaryEntries.FirstOrDefaultAsync(e => e.EventId == msg.EventId);
+                DiaryDecision decision = DiaryRules.Decide(msg, item.IsDuration, existing);
+
+                if (decision == DiaryDecision.Create)
+                    db.DiaryEntries.Add(new DiaryEntry { EventId = msg.EventId, Type = msg.Type, StartedAt = msg.Timestamp });
+                else if (decision == DiaryDecision.Close)
+                    existing!.EndedAt = msg.Timestamp;
+
+                await db.SaveChangesAsync();
+                diaryQueue.TryDequeue(out _);
+                logger.LogInformation("Diary {Type} {Action} {EventId}: {Decision}", msg.Type, msg.Action ?? "instant", msg.EventId, decision);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is Npgsql.PostgresException { SqlState: Npgsql.PostgresErrorCodes.UniqueViolation })
+            {
+                // Someone saved the same event_id first (e.g. a local backend running at the same time). Skip it.
+                diaryQueue.TryDequeue(out _);
+                logger.LogWarning("Diary event {EventId} already saved, skipped", msg.EventId);
+                return;
+            }
+            catch (Exception ex)
+            {
+                // Keep the event in the queue and try again on the next tick
+                logger.LogError(ex, "Failed to save diary event {EventId}, will retry", msg.EventId);
+                return;
+            }
+        }
     }
 
     private void RestoreStatus(string? payload)

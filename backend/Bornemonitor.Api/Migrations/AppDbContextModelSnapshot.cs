@@ -42,6 +42,35 @@ namespace Bornemonitor.Api.Migrations
                     b.ToTable("ChildStatusChanges");
                 });
 
+            modelBuilder.Entity("Bornemonitor.Api.Data.DiaryEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("EventId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId")
+                        .IsUnique();
+
+                    b.ToTable("DiaryEntries");
+                });
+
             modelBuilder.Entity("Bornemonitor.Api.Data.Measurement", b =>
                 {
                     b.Property<long>("Id")

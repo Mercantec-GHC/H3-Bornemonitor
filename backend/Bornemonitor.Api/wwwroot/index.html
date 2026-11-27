@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Børnemonitor</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Børnemonitor</h1>
+    <p id="updated" class="muted">Henter data…</p>
+  </header>
+
+  <main>
+    <section class="card" id="status-card">
+      <h2>Barnets enhed</h2>
+      <p id="status" class="status">–</p>
+      <p id="status-since" class="muted"></p>
+    </section>
+
+    <section class="card">
+      <h2>Lige nu</h2>
+      <div class="values">
+        <div><span class="label">Temperatur</span><span id="temp" class="value">–</span></div>
+        <div><span class="label">Luftfugtighed</span><span id="hum" class="value">–</span></div>
+        <div><span class="label">Lys</span><span id="light" class="value">–</span></div>
+      </div>
+      <p id="measured-at" class="muted"></p>
+    </section>
+
+    <section class="card wide">
+      <h2>Sidste 24 timer</h2>
+      <div class="chart"><canvas id="chart"></canvas></div>
+    </section>
+
+    <section class="card wide">
+      <h2>Dagbog – sidste 7 dage</h2>
+      <ul id="diary" class="diary"></ul>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
