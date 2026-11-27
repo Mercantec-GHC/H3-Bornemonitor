@@ -15,10 +15,18 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// The website: wwwroot/index.html, app.js, style.css
-app.UseDefaultFiles();
-// no-cache: Cloudflare and the browser must check with us before using a cached copy,
-// otherwise a new app.js/style.css only shows up after their cache expires
+// The website: wwwroot/index.html, app.js, style.css.
+// Cloudflare caches .js/.css for a long time. index.html links them as app.js?v=__VERSION__,
+// and every start of the backend (= every deploy) gets a new version, so the browser loads the new files.
+string version = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+string indexHtml = File.ReadAllText(Path.Combine(app.Environment.WebRootPath, "index.html")).Replace("__VERSION__", version);
+
+app.MapGet("/", (HttpContext context) =>
+{
+    context.Response.Headers.CacheControl = "no-cache";
+    return Results.Content(indexHtml, "text/html; charset=utf-8");
+});
+
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "no-cache"
