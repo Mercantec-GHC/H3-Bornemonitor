@@ -17,7 +17,12 @@ if (app.Environment.IsDevelopment())
 
 // The website: wwwroot/index.html, app.js, style.css
 app.UseDefaultFiles();
-app.UseStaticFiles();
+// no-cache: Cloudflare and the browser must check with us before using a cached copy,
+// otherwise a new app.js/style.css only shows up after their cache expires
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "no-cache"
+});
 
 // Without hours: the newest 100. With hours (1-168): everything from that period, for the chart.
 app.MapGet("/api/measurements", async (AppDbContext db, int? hours) =>
