@@ -10,11 +10,14 @@
 | `child/telemetry` gemmes i Neon, tabel `Measurements` (#7) | ✅ |
 | `GET /api/measurements` – seneste 100 målinger, nyeste først (#8) | ✅ |
 | Docker + deploy på deploy.mags.dk (#9) | ✅ kører på https://bornemonitor.mercantec.tech – release [v0.1.0](https://github.com/Mercantec-GHC/H3-Bornemonitor/releases/tag/v0.1.0) |
-| `child/status`, dagbog, JWT (#11–#13) | ⬜ |
+| `child/status` online/offline (#11), tabel `ChildStatusChanges` | ✅ |
+| Dagbog, JWT (#12–#13) | ⬜ |
 
 Ugyldig JSON eller JSON uden et påkrævet felt bliver logget (`fail`) og ikke gemt.
 
 Målinger gemmes samlet **hvert 15. minut** (og når appen stopper), så Neon kan sove imellem – gratisplanen har 100 compute-timer om måneden. API'et viser derfor målinger med op til 15 min. forsinkelse.
+
+**`child/status` (#11):** ingen telemetri i 60 sek. → backend publicerer `offline` med `last_seen`; telemetri igen → `online`. Kun ved skift, *retained*, QoS 1. Hvert skift gemmes i tabellen `ChildStatusChanges`. Efter genstart læser backenden den retained status fra brokeren og gentager den ikke. Logikken ligger i `ChildStatusTracker` og er dækket af unit-tests.
 
 ## Kør lokalt
 
@@ -28,6 +31,8 @@ dotnet user-secrets set "Mqtt:Password" "<adgangskode>"
 dotnet user-secrets set "ConnectionStrings:Neon" "Host=...;Database=...;Username=...;Password=...;SSL Mode=Require"
 dotnet run
 ```
+
+Unit-tests (fra mappen `backend`): `dotnet test -m:1` (`-m:1`, ellers kan to projekter bygge samtidig og fejle på `apphost`).
 
 Neon-strengen skal være i formatet `Host=...;` – Npgsql forstår ikke `postgresql://`.
 
